@@ -201,7 +201,7 @@ header {
   background-color: #444c56; 
 }
 
-/* Hamburger - domyślnie ukryty na PC */
+/* Hamburger - domyślnie ukryty */
 .hamburger {
   display: none;
 }
@@ -238,5 +238,12 @@ header {
   .hamburger {
     display: flex;
     cursor: pointer;
+  }
+
+  /* Article page on mobile: full width */
+  .article-page {
+    max-width: 97%;
+    padding: 20px;
+    margin: auto;
   }
 }
