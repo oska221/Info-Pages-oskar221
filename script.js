@@ -54,6 +54,12 @@ function loadArticle(path, element) {
   // Load the article into the iframe
   const iframe = document.getElementById("content-frame");
   iframe.src = path;
+
+  // Close sidebar on mobile
+  const sidebar = document.getElementById('sidebar');
+  if (window.innerWidth <= 768) {
+    sidebar.classList.remove('open');
+  }
 }
 
 function injectStylesIntoIframe(iframe) {
