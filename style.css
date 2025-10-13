@@ -104,12 +104,14 @@ header {
 #content-box {
   flex: 1;
   background: var(--bg);
-  overflow: auto;
+  overflow: hidden;
 }
 #content-frame {
   width: 100%;
   height: 100%;
   border: none;
+  overflow-y: auto;  /* scroll tylko w środku iframe */
+  overflow-x: hidden;
 }
 
 /* Article page */
