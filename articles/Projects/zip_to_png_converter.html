@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>ZIP ↔ PNG Converter</title>
+</head>
+<body>
+
+
+<section class="article-header">
+  <a href="https://github.com/oska221/Zip-to-png-converter" target="_blank" rel="noopener" class="github-button">
+    Open on GitHub
+  </a>
+</section>
+
+  <section class="info-page">
+    <h1>ZIP ↔ PNG Converter with Color Mapping</h1>
+
+    <p><strong>Turn your ZIP files into PNG images and back again.</strong><br>
+    This tool uses a special color mapping system to safely store ZIP file data inside PNG pictures.  
+    It comes with a <strong>simple GUI (Tkinter)</strong>, so anyone can use it easily.</p>
+
+    <hr />
+
+    <h2>Overview</h2>
+    <p>With this program you can:</p>
+    <ul>
+      <li>Encode <code>.zip</code> files into <code>.png</code> images.</li>
+      <li>Decode <code>.png</code> images back into <code>.zip</code> files.</li>
+      <li>Use a <strong>random color map</strong> for hexadecimal digits (0–f).</li>
+      <li>Add <strong>black separator lines</strong> every ~2MB for safety.</li>
+      <li>Run it either <strong>directly from Python files</strong> or as a <strong>standalone <code>.exe</code></strong>.</li>
+    </ul>
+
+    <hr />
+
+    <h2>How It Works</h2>
+
+    <h3>!! WARNING !!</h3>
+    <p>
+      The generated PNG file can be <strong>much larger than the original ZIP</strong> — in some cases up to <strong>15× the original size</strong> — due to the encoding method and black separator lines.  
+      Do <strong>NOT modify the PNG pixels</strong>, otherwise the ZIP file may become unrecoverable!
+    </p>
+
+    <h3>Encoding ZIP → PNG</h3>
+    <ol>
+      <li>Read your ZIP file as <strong>bytes</strong>.</li>
+      <li>Add metadata:
+        <ul>
+          <li>Length of file extension (like <code>.zip</code>).</li>
+          <li>File extension itself.</li>
+        </ul>
+      </li>
+      <li>Convert all bytes into a <strong>hexadecimal string</strong>.</li>
+      <li>Make a <strong>random color map</strong> for hex digits (0–f).</li>
+      <li>Create the PNG picture:
+        <ul>
+          <li>First 16 pixels store the color map.</li>
+          <li>Each hex character becomes a colored pixel.</li>
+          <li><strong>Black separator lines</strong> are added every ~2MB to prevent problems.</li>
+          <li>Pad remaining pixels to make a rectangle.</li>
+        </ul>
+      </li>
+      <li>Save the PNG file.</li>
+    </ol>
+
+    <p><em>This way, the PNG stores everything needed to get back your original ZIP.</em></p>
+
+    <h3>Decoding PNG → ZIP</h3>
+    <ol>
+      <li>Open the PNG and read all pixels.</li>
+      <li>Take the <strong>first 16 pixels</strong> as the color map.</li>
+      <li>Skip <strong>black separator lines</strong>.</li>
+      <li>Convert pixels back to <strong>hex characters</strong>.</li>
+      <li>Turn hex string back into <strong>bytes</strong>.</li>
+      <li>Read metadata to get the original file extension.</li>
+      <li>Save the decoded ZIP file in the folder you choose.</li>
+    </ol>
+    
+    <hr />
+
+    <h2>Requirements</h2>
+    <ul>
+      <li>Python 3.10 or newer</li>
+      <li>Pillow library (for working with images)</li>
+    </ul>
+
+    <p>Install Pillow:</p>
+    <pre><code>pip install Pillow</code></pre>
+
+  </section>
+
+</body>
+</html>

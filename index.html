@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Info Pages</title>
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+  <!-- Main CSS -->
+  <link id="main-css" rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Górny pasek -->
+  <header>
+    <!-- Logo, clicking opens the main file -->
+    <div class="logo" data-path="articles/first.html">
+      <span class="material-symbols-outlined">menu_book</span>
+      <span class="logo-text">Info Pages</span>
+    </div>
+    <div class="nav-links">
+      <a href="https://discord.com/users/738498261140242586" target="_blank" rel="noopener">Discord</a>
+      <a href="https://www.youtube.com/@_oskar_221" target="_blank" rel="noopener">YouTube</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- left sidebar -->
+    <aside class="sidebar" id="sidebar">
+
+      <!-- categoty 1 -->
+      <div class="menu-item">
+        <div class="menu-header">
+          <div class="menu-title" data-path="articles/first.html">
+            <span class="material-symbols-outlined">info</span>
+            <span class="title-text">Documentation Info</span>
+          </div>
+          <button class="arrow"><span class="material-symbols-outlined">chevron_right</span></button>
+        </div>
+        <div class="submenu">
+          <a href="#" data-path="articles/readme.html">Readme (about me)</a>
+          <a href="#" data-path="articles/contact.html">Contact</a>
+        </div>
+      </div>
+
+      <!-- category 2 -->
+      <div class="menu-item">
+        <div class="menu-header">
+          <div class="menu-title" data-path="articles/projects.html">
+            <span class="material-symbols-outlined">build</span>
+            <span class="title-text">Projects</span>
+          </div>
+          <button class="arrow"><span class="material-symbols-outlined">chevron_right</span></button>
+        </div>
+        <div class="submenu">
+          <a href="#" data-path="articles/Projects/zip_to_png_converter.html">Zip to Png Converter</a>
+          <a href="#" data-path="articles/Projects/disk_image_integrity_tester.html">Disk Image Integrity Tester</a>
+        </div>
+      </div>
+
+      <!-- Add new categories here -->
+    </aside>
+
+    <!-- Main content -->
+    <main id="content-box">
+      <iframe id="content-frame" src="articles/first.html"></iframe>
+    </main>
+  </div>
+
+<footer class="footer">
+    <p>© 2025 Dokumentacja | Wszystkie prawa zastrzeżone</p>
+</footer>
+
+  <!-- Script -->
+  <script src="script.js"></script>
+</body>
+</html>

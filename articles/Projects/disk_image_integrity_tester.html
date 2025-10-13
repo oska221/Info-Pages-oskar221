@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Disk Image Integrity Tester</title>
+  <link id="main-css" rel="stylesheet" href="style_articles.css" />
+</head>
+<body>
+
+  <!-- Open on GitHub button -->
+  <section class="article-header">
+    <a href="https://github.com/oska221/Disk-Image-Integrity-Tester" target="_blank" rel="noopener" class="github-button">
+      Open on GitHub
+    </a>
+  </section>
+
+  <section class="info-page">
+    <h1>Disk Image Tester – Disk Integrity Tester Using Images</h1>
+
+    <p><strong>Fill a directory with image files and check their integrity.</strong><br>
+    This tool allows you to simulate disk usage by creating PNG files and later verify their integrity using SHA256 checksums.  
+    A simple <strong>Tkinter GUI</strong> is provided for easy operation.</p>
+
+    <hr />
+
+    <h2>Project Overview</h2>
+    <p>The program allows you to:</p>
+    <ul>
+      <li>Fill a target directory with PNG image files to simulate disk usage.</li>
+      <li>Optionally use a base image file, which will be duplicated for all files.</li>
+      <li>Leave a specified amount of free disk space (default 100 MB).</li>
+      <li>Optionally fill the disk completely (use at your own risk).</li>
+      <li>Verify file integrity using SHA256 checksums stored in <code>checksums.json</code>.</li>
+      <li>Track all operations and verification results in the GUI log.</li>
+    </ul>
+
+    <hr />
+
+    <h2>How It Works</h2>
+
+    <h3>Filling a Directory</h3>
+    <ol>
+      <li>Prepare a <strong>base image</strong> or generate a default PNG.</li>
+      <li>Check available free disk space.</li>
+      <li>Create PNG files in the target directory.</li>
+      <li>Record metadata for each file:
+        <ul>
+          <li>SHA256 hash</li>
+          <li>File size</li>
+          <li>Creation timestamp</li>
+          <li>in <code>checksums.json</code></li>
+        </ul>
+      </li>
+      <li>Stop automatically when the configured free space is reached (or fill to zero if enabled).</li>
+    </ol>
+
+    <h3>Verifying Files</h3>
+    <ol>
+      <li>Read <code>checksums.json</code> from the target directory.</li>
+      <li>Compute SHA256 hashes for all files.</li>
+      <li>Compare results with the saved hashes.</li>
+      <li>Log any missing or corrupted files in the GUI.</li>
+    </ol>
+
+    <hr />
+
+    <h2>Requirements</h2>
+    <ul>
+      <li>Python 3.10+</li>
+      <li>Pillow library for image processing</li>
+    </ul>
+
+    <p>Install Pillow:</p>
+    <pre><code>pip install Pillow</code></pre>
+
+  </section>
+
+</body>
+</html>
