@@ -12,12 +12,13 @@
   <link id="main-css" rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Górny pasek -->
   <header>
-    <!-- Logo, clicking opens the main file -->
     <div class="logo" data-path="articles/first.html">
       <span class="material-symbols-outlined">menu_book</span>
       <span class="logo-text">Info Pages</span>
+    </div>
+    <div class="hamburger" id="hamburger">
+      <span class="material-symbols-outlined">menu</span>
     </div>
     <div class="nav-links">
       <a href="https://discord.com/users/738498261140242586" target="_blank" rel="noopener">Discord</a>
@@ -26,10 +27,7 @@
   </header>
 
   <div class="container">
-    <!-- left sidebar -->
     <aside class="sidebar" id="sidebar">
-
-      <!-- categoty 1 -->
       <div class="menu-item">
         <div class="menu-header">
           <div class="menu-title" data-path="articles/first.html">
@@ -44,7 +42,6 @@
         </div>
       </div>
 
-      <!-- category 2 -->
       <div class="menu-item">
         <div class="menu-header">
           <div class="menu-title" data-path="articles/projects.html">
@@ -58,11 +55,8 @@
           <a href="#" data-path="articles/Projects/disk_image_integrity_tester.html">Disk Image Integrity Tester</a>
         </div>
       </div>
-
-      <!-- Add new categories here -->
     </aside>
 
-    <!-- Main content -->
     <main id="content-box">
       <iframe id="content-frame" src="articles/first.html"></iframe>
     </main>
@@ -72,7 +66,14 @@
     <p>© 2025 Dokumentacja | Wszystkie prawa zastrzeżone</p>
 </footer>
 
-  <!-- Script -->
-  <script src="script.js"></script>
+<script src="script.js"></script>
+<script>
+  // Hamburger toggle (mobile)
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.getElementById('sidebar');
+  hamburger.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+  });
+</script>
 </body>
 </html>
