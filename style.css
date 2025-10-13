@@ -203,7 +203,7 @@ header {
 
 /* Hamburger - domyślnie ukryty */
 .hamburger {
-  display: none;
+  display: none !important;
 }
 
 /* Mobile responsive */
@@ -236,14 +236,16 @@ header {
     display: none;
   }
   .hamburger {
-    display: flex;
+    display: flex !important;
     cursor: pointer;
   }
 
   /* Article page on mobile: full width */
   .article-page {
-    max-width: 97%;
-    padding: 20px;
-    margin: auto;
+    max-width: 97vw !important;
+    width: 97vw !important;
+    padding: 10px 15px !important;
+    margin: 0 auto !important;
+    box-sizing: border-box;
   }
 }
