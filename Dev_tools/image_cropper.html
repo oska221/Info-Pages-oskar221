@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Image Cropper</title>
+</head>
+<body class="article-page">
+
+<h1>Advanced Image Cropper</h1>
+
+<input type="file" id="imageInput" accept="image/*">
+
+<div style="margin:10px 0;">
+  <label for="widthInput">Width:</label>
+  <input type="number" id="widthInput" value="300">
+  <label for="heightInput">Height:</label>
+  <input type="number" id="heightInput" value="300">
+  <label><input type="checkbox" id="lockRatio" checked> Lock Ratio</label>
+</div>
+
+<div style="margin:10px 0;">
+  <button class="github-button" id="template11">1:1</button>
+  <button class="github-button" id="template169">16:9</button>
+  <button class="github-button" id="template916">9:16</button>
+</div>
+
+<canvas id="canvas" style="border:1px solid #333; display:block; margin:20px auto;"></canvas>
+
+<div style="margin:10px 0;">
+  <label>Zoom:</label>
+  <input type="range" id="zoomRange" min="0.1" max="3" step="0.01" value="1" style="width: 100%;">
+</div>
+
+<button class="github-button" id="exportBtn">Export Cropped Image</button>
+<a id="downloadLink" style="display:none;" class="github-button">Download</a>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const widthInput = document.getElementById('widthInput');
+const heightInput = document.getElementById('heightInput');
+const lockRatio = document.getElementById('lockRatio');
+const zoomRange = document.getElementById('zoomRange');
+
+let img = new Image();
+let crop = {x:50, y:50, width:300, height:300};
+let draggingCrop = false, resizingCrop = false;
+let dragStart = {x:0,y:0}, resizeStart = {x:0,y:0};
+let aspectRatio = crop.width/crop.height;
+
+let zoom = 1, offsetX = 0, offsetY = 0;
+let isPanning = false, panStart = {x:0,y:0};
+
+// Load image
+document.getElementById('imageInput').addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    img.onload = ()=> {
+        const maxW = window.innerWidth*0.7;
+        const maxH = window.innerHeight*0.7;
+        const scale = Math.min(maxW/img.width, maxH/img.height,1);
+        canvas.width = img.width*scale;
+        canvas.height = img.height*scale;
+        crop.width = crop.height = Math.min(canvas.width, canvas.height, 300);
+        crop.x = (canvas.width - crop.width)/2;
+        crop.y = (canvas.height - crop.height)/2;
+        aspectRatio = crop.width/crop.height;
+        widthInput.value = Math.round(crop.width/zoom);
+        heightInput.value = Math.round(crop.height/zoom);
+        offsetX = 0; offsetY = 0;
+        zoom = 1; zoomRange.value = zoom;
+        draw();
+    };
+    img.src = URL.createObjectURL(file);
+});
+
+// Draw function
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.save();
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(zoom, zoom);
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    ctx.restore();
+
+    // Crop rectangle
+    ctx.strokeStyle = '#0080ff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(crop.x, crop.y, crop.width, crop.height);
+    ctx.fillStyle = 'rgba(0,128,255,0.2)';
+    ctx.fillRect(crop.x, crop.y, crop.width, crop.height);
+
+    // Resize handle
+    ctx.fillStyle = '#0080ff';
+    ctx.fillRect(crop.x+crop.width-10, crop.y+crop.height-10, 10, 10);
+
+    // Update input values to real resolution
+    widthInput.value = Math.round(crop.width/zoom);
+    heightInput.value = Math.round(crop.height/zoom);
+}
+
+// Mouse events
+canvas.addEventListener('mousedown', e=>{
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Resize only in right-bottom corner
+    if(x > crop.x + crop.width - 10 && x < crop.x + crop.width &&
+       y > crop.y + crop.height - 10 && y < crop.y + crop.height){
+        resizingCrop = true;
+        resizeStart = {x:x, y:y, width:crop.width, height:crop.height};
+    } 
+    // Drag only inside crop box
+    else if(x >= crop.x && x <= crop.x + crop.width &&
+            y >= crop.y && y <= crop.y + crop.height){
+        draggingCrop = true;
+        dragStart = {x:x - crop.x, y:y - crop.y};
+    } 
+    // Pan canvas if click outside crop
+    else {
+        isPanning = true;
+        panStart = {x:x - offsetX, y:y - offsetY};
+    }
+});
+
+canvas.addEventListener('mousemove', e=>{
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if(resizingCrop){
+        let newW = resizeStart.width + (x - resizeStart.x);
+        let newH = lockRatio.checked ? newW/aspectRatio : resizeStart.height + (y - resizeStart.y);
+        if(crop.x+newW>canvas.width) newW=canvas.width-crop.x;
+        if(crop.y+newH>canvas.height) newH=canvas.height-crop.y;
+        crop.width = newW;
+        crop.height = newH;
+        draw();
+    } else if(draggingCrop){
+        crop.x = x - dragStart.x;
+        crop.y = y - dragStart.y;
+        if(crop.x<0) crop.x=0;
+        if(crop.y<0) crop.y=0;
+        if(crop.x+crop.width>canvas.width) crop.x=canvas.width-crop.width;
+        if(crop.y+crop.height>canvas.height) crop.y=canvas.height-crop.height;
+        draw();
+    } else if(isPanning){
+        offsetX = x - panStart.x;
+        offsetY = y - panStart.y;
+        draw();
+    }
+});
+
+canvas.addEventListener('mouseup', ()=>{draggingCrop=false; resizingCrop=false; isPanning=false;});
+canvas.addEventListener('mouseleave', ()=>{draggingCrop=false; resizingCrop=false; isPanning=false;});
+
+// Zoom slider
+zoomRange.addEventListener('input', ()=>{
+    zoom = parseFloat(zoomRange.value);
+    draw();
+});
+
+// Zoom by mouse wheel (centered on cursor)
+canvas.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const prevZoom = zoom;
+    zoom *= e.deltaY < 0 ? 1.1 : 0.9;
+    if(zoom<0.1) zoom=0.1;
+    if(zoom>5) zoom=5;
+    // adjust offset so zoom is centered on mouse
+    offsetX -= (mx - offsetX)*(zoom/prevZoom - 1);
+    offsetY -= (my - offsetY)*(zoom/prevZoom - 1);
+    zoomRange.value = zoom;
+    draw();
+});
+
+// Update crop from inputs
+widthInput.addEventListener('input', ()=>{ 
+    let w = parseInt(widthInput.value) * zoom; 
+    let h = lockRatio.checked ? w/aspectRatio : parseInt(heightInput.value)*zoom; 
+    crop.width = w; 
+    crop.height = h; 
+    draw();
+});
+heightInput.addEventListener('input', ()=>{
+    let h = parseInt(heightInput.value)*zoom;
+    let w = lockRatio.checked ? h*aspectRatio : parseInt(widthInput.value)*zoom;
+    crop.height = h;
+    crop.width = w;
+    draw();
+});
+
+// Templates
+document.getElementById('template11').addEventListener('click', ()=>{ crop.height = crop.width; aspectRatio=1; draw(); });
+document.getElementById('template169').addEventListener('click', ()=>{ crop.height = crop.width*9/16; aspectRatio=16/9; draw(); });
+document.getElementById('template916').addEventListener('click', ()=>{ crop.height = crop.width*16/9; aspectRatio=9/16; draw(); });
+
+// Export
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = Math.round(crop.width/zoom);
+    exportCanvas.height = Math.round(crop.height/zoom);
+    const exportCtx = exportCanvas.getContext('2d');
+    exportCtx.drawImage(
+        img,
+        (crop.x-offsetX)/zoom,
+        (crop.y-offsetY)/zoom,
+        crop.width/zoom,
+        crop.height/zoom,
+        0,0,
+        exportCanvas.width,
+        exportCanvas.height
+    );
+    exportCanvas.toBlob(blob=>{
+        const url = URL.createObjectURL(blob);
+        const link = document.getElementById('downloadLink');
+        link.href = url;
+        link.download = 'cropped.png';
+        link.style.display = 'inline-block';
+    }, 'image/png');
+});
+</script>
+
+</body>
+</html>
