@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PNG → JPG Converter</title>
+</head>
+<body class="article-page">
+
+<h1>PNG → JPG Converter</h1>
+
+<p>Select a PNG file and choose compression quality:</p>
+<input type="file" id="pngFileJPG" accept="image/png">
+<label for="qualityRange">Quality: <span id="qualityVal">80</span>%</label>
+<input type="range" id="qualityRange" min="1" max="100" value="80">
+
+<button class="github-button" id="convertJPG">Convert</button>
+<a class="github-button" id="downloadJPG" style="display:none;">Download JPG</a>
+
+<script>
+const qualityRange = document.getElementById('qualityRange');
+const qualityVal = document.getElementById('qualityVal');
+qualityRange.addEventListener('input', () => qualityVal.textContent = qualityRange.value);
+
+document.getElementById('convertJPG').addEventListener('click', () => {
+  const fileInput = document.getElementById('pngFileJPG');
+  const quality = parseInt(qualityRange.value)/100;
+  const downloadLink = document.getElementById('downloadJPG');
+  if(!fileInput.files.length){ alert('Please select a PNG file.'); return; }
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0);
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        downloadLink.href = url;
+        downloadLink.download = fileInput.files[0].name.replace(/\.png$/i,'.jpg');
+        downloadLink.style.display = 'inline';
+      }, 'image/jpeg', quality);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(fileInput.files[0]);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phone Icon Generator</title>
+</head>
+<body class="article-page">
+
+<h1>Phone Icon Generator</h1>
+
+<p>Select an image to crop and export icons for Android:</p>
+<input type="file" id="imageInput" accept="image/*">
+
+<canvas id="canvas" style="border:1px solid #333; display:block; margin:20px auto;"></canvas>
+
+<label for="zoomRange">Zoom:</label>
+<input type="range" id="zoomRange" min="0.1" max="5" step="0.01" value="1">
+
+<button class="github-button" id="exportBtn">Export Icons (ZIP)</button>
+<a id="downloadLink" style="display:none;" class="github-button">Download ZIP</a>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const zoomRange = document.getElementById('zoomRange');
+
+let img = new Image();
+let crop = { x: 50, y: 50, size: 256 };
+let draggingCrop = false, resizingCrop = false;
+let dragStart = {x:0,y:0}, resizeStart = {x:0,y:0};
+
+let isPanning = false, panStart = {x:0,y:0};
+let offsetX = 0, offsetY = 0;
+let zoom = 1;
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // draw zoomed image
+    ctx.save();
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(zoom, zoom);
+    ctx.drawImage(img, 0, 0);
+    ctx.restore();
+
+    // draw crop rectangle
+    ctx.strokeStyle = '#0080ff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(crop.x, crop.y, crop.size, crop.size);
+    ctx.fillStyle = 'rgba(0,128,255,0.2)';
+    ctx.fillRect(crop.x, crop.y, crop.size, crop.size);
+
+    // draw resize handle
+    ctx.fillStyle = '#0080ff';
+    ctx.fillRect(crop.x+crop.size-10, crop.y+crop.size-10, 10, 10);
+}
+
+document.getElementById('imageInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    img.onload = ()=> {
+        const maxWidth = window.innerWidth*0.7;
+        const maxHeight = window.innerHeight*0.7;
+        const scale = Math.min(maxWidth/img.width, maxHeight/img.height, 1);
+        canvas.width = img.width*scale;
+        canvas.height = img.height*scale;
+        crop.size = Math.min(canvas.width, canvas.height, 256);
+        crop.x = (canvas.width-crop.size)/2;
+        crop.y = (canvas.height-crop.size)/2;
+        offsetX = 0; offsetY = 0; zoom = 1;
+        zoomRange.value = 1;
+        draw();
+    };
+    img.src = URL.createObjectURL(file);
+});
+
+// Mouse events for crop & pan
+canvas.addEventListener('mousedown',(e)=>{
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if(x > crop.x+crop.size-10 && y > crop.y+crop.size-10){
+        resizingCrop = true;
+        resizeStart = {x:x, y:y, size:crop.size};
+    } else if(x > crop.x && x < crop.x+crop.size && y > crop.y && y < crop.y+crop.size){
+        draggingCrop = true;
+        dragStart = {x:x-crop.x, y:y-crop.y};
+    } else {
+        isPanning = true;
+        panStart = {x:x-offsetX, y:y-offsetY};
+    }
+});
+
+canvas.addEventListener('mousemove',(e)=>{
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if(resizingCrop){
+        let newSize = resizeStart.size + (x - resizeStart.x);
+        if(newSize<20) newSize=20;
+        if(crop.x+newSize>canvas.width) newSize=canvas.width-crop.x;
+        if(crop.y+newSize>canvas.height) newSize=canvas.height-crop.y;
+        crop.size = newSize;
+        draw();
+    } else if(draggingCrop){
+        crop.x = x - dragStart.x;
+        crop.y = y - dragStart.y;
+        if(crop.x<0) crop.x=0;
+        if(crop.y<0) crop.y=0;
+        if(crop.x+crop.size>canvas.width) crop.x=canvas.width-crop.size;
+        if(crop.y+crop.size>canvas.height) crop.y=canvas.height-crop.size;
+        draw();
+    } else if(isPanning){
+        offsetX = x - panStart.x;
+        offsetY = y - panStart.y;
+        draw();
+    }
+});
+
+canvas.addEventListener('mouseup',()=>{draggingCrop=false; resizingCrop=false; isPanning=false;});
+canvas.addEventListener('mouseleave',()=>{draggingCrop=false; resizingCrop=false; isPanning=false;});
+
+// Zoom via slider
+zoomRange.addEventListener('input',(e)=>{
+    zoom = parseFloat(e.target.value);
+    draw();
+});
+
+// Export icons
+document.getElementById('exportBtn').addEventListener('click', async ()=>{
+    const iconSizes = [
+        {prefix:'launcher', sizes:[{name:'mdpi', px:48},{name:'hdpi',px:72},{name:'xhdpi',px:96},{name:'xxhdpi',px:144},{name:'xxxhdpi',px:192},{name:'play',px:512}]},
+        {prefix:'notification', sizes:[{name:'mdpi', px:24},{name:'hdpi',px:36},{name:'xhdpi',px:48},{name:'xxhdpi',px:72},{name:'xxxhdpi',px:96}]}
+    ];
+
+    const zip = new JSZip();
+
+    for(const type of iconSizes){
+        for(const s of type.sizes){
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = s.px;
+            exportCanvas.height = s.px;
+            const exportCtx = exportCanvas.getContext('2d');
+            exportCtx.drawImage(
+                img,
+                crop.x*(img.width/canvas.width),
+                crop.y*(img.height/canvas.height),
+                crop.size*(img.width/canvas.width),
+                crop.size*(img.height/canvas.height),
+                0,0, s.px, s.px
+            );
+            const blob = await new Promise(r=>exportCanvas.toBlob(r,'image/png'));
+            zip.file(`${type.prefix}_${s.name}.png`, blob);
+        }
+    }
+
+    zip.generateAsync({type:'blob'}).then(blob=>{
+        const url = URL.createObjectURL(blob);
+        const link = document.getElementById('downloadLink');
+        link.href = url;
+        link.download = 'phone_icons.zip';
+        link.style.display = 'inline-block';
+        link.textContent = 'Download ZIP';
+    });
+});
+</script>
+
+</body>
+</html>
