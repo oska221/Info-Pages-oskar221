@@ -20,9 +20,8 @@
   <option value="256">256×256</option>
 </select>
 
-<button class="github-button" id="convertBtn">Convert to ICO</button>
-<a id="downloadLink" style="display:none;" class="github-button">Download ICO</a>
-
+<button id="convertBtn">Convert to ICO</button>
+<a id="downloadLink" style="display:none;">Download ICO</a>
 </div>
 
 <script>
@@ -38,18 +37,16 @@ function writeUInt32LE(view, offset, value) {
     view[offset+3] = (value >> 24) & 0xff;
 }
 
-// RGBA → DIB (BMP) data for ICO
 function rgbaToDIB(rgba, width, height) {
-    const rowSize = width * 4;
-    const bmp = new Uint8Array(rowSize * height);
+    const bmp = new Uint8Array(width * height * 4);
     for (let y=0; y<height; y++) {
         for (let x=0; x<width; x++) {
-            const i = ((height-1-y)*width + x)*4; // invert vertically
-            const j = y*width*4 + x*4;
-            bmp[j] = rgba[i+2];    // B
-            bmp[j+1] = rgba[i+1];  // G
-            bmp[j+2] = rgba[i];    // R
-            bmp[j+3] = rgba[i+3];  // A
+            const i = ((height-1-y)*width + x)*4;
+            const j = (y*width + x)*4;
+            bmp[j] = rgba[i+2]; // B
+            bmp[j+1] = rgba[i+1]; // G
+            bmp[j+2] = rgba[i]; // R
+            bmp[j+3] = rgba[i+3]; // A
         }
     }
     return bmp;
@@ -70,40 +67,39 @@ document.getElementById('convertBtn').addEventListener('click', () => {
         const imageData = ctx.getImageData(0,0,size,size);
 
         const dibData = rgbaToDIB(imageData.data, size, size);
-        const dibHeaderSize = 40; // BITMAPINFOHEADER
+        const dibHeaderSize = 40;
         const dibSize = dibHeaderSize + dibData.length;
 
-        const icoSize = 6 + 16 + dibSize;
-        const icoBuffer = new ArrayBuffer(icoSize);
+        const icoBuffer = new ArrayBuffer(6 + 16 + dibSize);
         const view = new Uint8Array(icoBuffer);
 
         // ICONDIR
-        writeUInt16LE(view,0,0);  // reserved
-        writeUInt16LE(view,2,1);  // type 1=icon
-        writeUInt16LE(view,4,1);  // count
+        writeUInt16LE(view,0,0);
+        writeUInt16LE(view,2,1);
+        writeUInt16LE(view,4,1);
 
         // ICONDIRENTRY
         view[6] = size >= 256 ? 0 : size;
         view[7] = size >= 256 ? 0 : size;
-        view[8] = 0;  // colors
-        view[9] = 0;  // reserved
-        writeUInt16LE(view,10,1);   // planes
-        writeUInt16LE(view,12,32);  // bpp
-        writeUInt32LE(view,14,dibSize); // image size
-        writeUInt32LE(view,18,6+16);    // offset to image
+        view[8] = 0;
+        view[9] = 0;
+        writeUInt16LE(view,10,1);
+        writeUInt16LE(view,12,32);
+        writeUInt32LE(view,14,dibSize);
+        writeUInt32LE(view,18,6+16);
 
         // BITMAPINFOHEADER
-        writeUInt32LE(view,22,dibHeaderSize); // header size
-        writeUInt32LE(view,26,size);          // width
-        writeUInt32LE(view,30,size*2);        // height (color + mask)
-        writeUInt16LE(view,34,1);             // planes
-        writeUInt16LE(view,36,32);            // bits per pixel
-        writeUInt32LE(view,38,0);             // compression
-        writeUInt32LE(view,42,dibData.length);// image size
-        writeUInt32LE(view,46,0);             // x ppm
-        writeUInt32LE(view,50,0);             // y ppm
-        writeUInt32LE(view,54,0);             // colors used
-        writeUInt32LE(view,58,0);             // colors important
+        writeUInt32LE(view,22,dibHeaderSize);
+        writeUInt32LE(view,26,size);
+        writeUInt32LE(view,30,size*2);
+        writeUInt16LE(view,34,1);
+        writeUInt16LE(view,36,32);
+        writeUInt32LE(view,38,0);
+        writeUInt32LE(view,42,dibData.length);
+        writeUInt32LE(view,46,0);
+        writeUInt32LE(view,50,0);
+        writeUInt32LE(view,54,0);
+        writeUInt32LE(view,58,0);
 
         view.set(dibData, 62);
 
@@ -116,7 +112,6 @@ document.getElementById('convertBtn').addEventListener('click', () => {
         link.style.display = 'inline-block';
         link.textContent = 'Download ICO';
     };
-
     img.src = URL.createObjectURL(fileInput.files[0]);
 });
 </script>
